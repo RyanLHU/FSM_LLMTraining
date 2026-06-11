@@ -1,0 +1,5 @@
+source_id,title,source_type,date,url_or_ref,summary,reliability_note
+SRC-A,海濱文化週末入場及交通安排,official,2026-06-05,https://example.org/event-notice,"主辦方公告活動日期、時間、高峰時段與公共交通建議。","官方來源，適合作活動基本資料依據。"
+SRC-B,南灣湖周邊臨時交通措施,official,2026-06-12,https://example.org/traffic-notice,"交通部門公告 2026-06-20 起部分路段臨時管制及巴士站遷移。","官方來源，但未清楚列明 2026-06-21 是否延續。"
+SRC-C,七天天氣展望,official,2026-06-18,https://example.org/weather,"6 月 20 日傍晚至晚上有驟雨機會；6 月 21 日午後局部可能有雷雨。","天氣預報有不確定性，需要接近活動日期更新。"
+SRC-D,海濱文化週末料吸引市民到場,news,2026-06-16,https://example.net/news-event,"新聞引述附近商戶預計人流增加，未提供官方人流估算。","可作背景參考，不應作精確人流或風險結論依據。"

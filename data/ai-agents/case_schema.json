@@ -1,0 +1,17 @@
+{
+  "case_id": "string",
+  "case_type": {
+    "type": "string",
+    "allowed_values": ["theft", "lost_property", "fraud", "traffic", "public_order", "unknown"]
+  },
+  "incident_date": "YYYY-MM-DD or null",
+  "incident_time_range": "string or null",
+  "district": "string or null",
+  "location_description": "string or null",
+  "items_involved": ["string"],
+  "reported_loss_value": "number or null",
+  "possible_duplicate_case_ids": ["string"],
+  "missing_fields": ["string"],
+  "uncertain_points": ["string"],
+  "human_review_required": "boolean"
+}

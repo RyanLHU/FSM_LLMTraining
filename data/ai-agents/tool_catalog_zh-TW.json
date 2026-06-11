@@ -1,0 +1,105 @@
+[
+  {
+    "name": "case_read_tool",
+    "purpose": "Read authorized de-identified case summaries for training or approved internal analysis.",
+    "inputs": {
+      "case_ids": "array of string",
+      "fields": "array of allowed field names"
+    },
+    "outputs": {
+      "records": "array of case summary objects",
+      "access_log_id": "string"
+    },
+    "permission_boundary": "Only de-identified training records may be returned. No personal identifiers.",
+    "failure_behavior": "Return permission_denied or no_records_found with reason."
+  },
+  {
+    "name": "schema_validator",
+    "purpose": "Validate structured case records against a predefined schema.",
+    "inputs": {
+      "records": "array of objects",
+      "schema": "schema object"
+    },
+    "outputs": {
+      "valid_records": "array",
+      "errors": "array of field-level errors",
+      "missing_fields": "array"
+    },
+    "permission_boundary": "Does not infer missing facts; only validates provided fields.",
+    "failure_behavior": "Return validation_error with field path and expected type."
+  },
+  {
+    "name": "official_site_fetcher",
+    "purpose": "Fetch public official announcements from approved domains.",
+    "inputs": {
+      "query": "string",
+      "date_range": "optional string",
+      "source_type": "official"
+    },
+    "outputs": {
+      "results": "array of title, date, url, summary"
+    },
+    "permission_boundary": "Public official sources only.",
+    "failure_behavior": "Return no_results or service_error."
+  },
+  {
+    "name": "web_search",
+    "purpose": "Search public web sources for current information.",
+    "inputs": {
+      "query": "string",
+      "date_range": "optional string"
+    },
+    "outputs": {
+      "results": "array of title, date, url, snippet"
+    },
+    "permission_boundary": "Public sources only. Do not search internal case systems.",
+    "failure_behavior": "Return no_results or service_error."
+  },
+  {
+    "name": "source_tracker",
+    "purpose": "Record source metadata used by an agent.",
+    "inputs": {
+      "title": "string",
+      "url_or_ref": "string",
+      "date": "string",
+      "summary": "string",
+      "claim_supported": "string"
+    },
+    "outputs": {
+      "source_id": "string",
+      "saved": "boolean"
+    },
+    "permission_boundary": "Stores metadata only, not sensitive personal data.",
+    "failure_behavior": "Return save_failed with reason."
+  },
+  {
+    "name": "policy_retriever",
+    "purpose": "Retrieve relevant SOP snippets from an approved policy knowledge base.",
+    "inputs": {
+      "query": "string",
+      "department": "optional string",
+      "version_preference": "latest"
+    },
+    "outputs": {
+      "snippets": "array of document_id, version_date, paragraph, text"
+    },
+    "permission_boundary": "Returns only documents the user is authorized to view.",
+    "failure_behavior": "Return permission_denied, no_results, or conflicting_versions."
+  },
+  {
+    "name": "audit_logger",
+    "purpose": "Log tool use, parameters, outputs, and human review status.",
+    "inputs": {
+      "actor": "string",
+      "tool_name": "string",
+      "parameters_summary": "string",
+      "output_summary": "string",
+      "review_required": "boolean"
+    },
+    "outputs": {
+      "audit_log_id": "string"
+    },
+    "permission_boundary": "Must not store full sensitive raw data in logs.",
+    "failure_behavior": "Return log_failed; agent should stop high-risk workflow if logging fails."
+  }
+]
