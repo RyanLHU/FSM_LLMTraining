@@ -1,0 +1,4 @@
+{"input":{"title":"季度文具需求","body":"請各組提交紙張及文件夾數量。","date":"2026-07-01","version":"1"},"output":{"category":"LOG","filename":"2026-07-01_LOG_季度文具需求_v1"}}
+{"input":{"title":"培訓通知","body":"資料保護課程於8月1日舉行。","date":"2026-07-10","version":"2"},"output":{"category":"TRN","filename":"2026-07-10_TRN_資料保護課程_v2"}}
+{"input":{"title":"行政會議","body":"月會於星期五舉行。","date":"2026-07-12","version":"1"},"output":{"category":"MTG","filename":"2026-07-12_MTG_行政月會_v1"}}
+{"input":{"title":"安排通知","body":"文件同時要求調整更表、領取制服及預約會議室，沒有回覆期限。","date":"","version":""},"output":{"category":"REVIEW","filename":null}}

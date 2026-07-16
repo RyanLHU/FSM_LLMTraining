@@ -1,0 +1,9 @@
+issue_id,row_reference,field,issue_type,expected_handling
+W001,"A,2026-09-03",documents_scanned,non_numeric,"保留原值abc；該欄不納入計算並要求核實"
+W002,"A,2026-09-04",forms_checked,missing,"保持缺失；不可改為0"
+W003,"A,2026-09-05",training_hours,negative,"標記-1不合理並要求核實"
+W004,"B,2026-09-02",entire_row,exact_duplicate,"標記候選重複；確認後才去重"
+W005,"B,2026-09-03",meeting_room_bookings,non_numeric,"保留three；該欄不納入計算"
+W006,"C,2026-13-03",date,invalid_date,"月份13無效；整列日期須核實"
+W007,"C,2026-09-04",documents_scanned,negative,"標記-5不合理並要求核實"
+W008,"C,2026-09-05",training_hours,missing,"保持缺失；不可改為0"

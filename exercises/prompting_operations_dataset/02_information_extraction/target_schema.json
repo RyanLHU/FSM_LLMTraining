@@ -1,0 +1,17 @@
+{
+  "source_id": "string",
+  "document_type": "string|null",
+  "activity": "string|null",
+  "event_date": "YYYY-MM-DD|null",
+  "start_time": "HH:MM|null",
+  "end_time": "HH:MM|null",
+  "location": "string|null",
+  "source_unit": "string|null",
+  "responsible_unit": "string|null",
+  "deadline": "string|null",
+  "items": [],
+  "version": "string|null",
+  "status": "string|null",
+  "missing_or_ambiguous": [],
+  "source_evidence": []
+}

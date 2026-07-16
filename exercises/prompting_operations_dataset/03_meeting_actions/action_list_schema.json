@@ -1,0 +1,19 @@
+{
+  "meeting_date": "YYYY-MM-DD",
+  "document_status": "string",
+  "decisions": [],
+  "actions": [
+    {
+      "action": "string",
+      "responsible_unit": "string|null",
+      "responsible_person": null,
+      "deadline": "string|null",
+      "status": "string",
+      "dependency": "string|null",
+      "source_evidence": "string"
+    }
+  ],
+  "proposals_not_approved": [],
+  "missing_or_ambiguous": [],
+  "next_meeting": {}
+}
