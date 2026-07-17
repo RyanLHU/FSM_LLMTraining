@@ -1,5 +1,9 @@
 # 人工智能與警務應用 Slides 總覽
 
+Submission link: https://uofmacau-
+my.sharepoint.com/:f:/g/personal/ryanlhu_um_edu_mo/IgB8SJXg5COAR5dov0DWEuJ_AbAv9hyKCL
+SxO8txJa2t7K4?e=kSe66A
+
 本資料夾包含課程用 slides、練習資料與補充素材。Slides 由第 1 至第 5 部分組成，建議按順序學習。
 
 ## Slides
