@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ReAct 與 Reflexion 教學實驗室</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #0f172a;
+        --muted: #64748b;
+        --line: #dbe3ef;
+        --panel: #f8fafc;
+        --brand: #0f766e;
+        --accent: #c2410c;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: var(--ink);
+        background: #ffffff;
+      }
+
+      main {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 360px;
+        height: 100vh;
+      }
+
+      .chat {
+        display: flex;
+        min-width: 0;
+        flex-direction: column;
+        border-right: 1px solid var(--line);
+      }
+
+      header {
+        padding: 18px 22px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 20px;
+      }
+
+      .subtitle {
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      #messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 22px;
+        background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+      }
+
+      .message {
+        max-width: 880px;
+        margin-bottom: 14px;
+        padding: 13px 15px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #ffffff;
+        white-space: pre-wrap;
+        line-height: 1.45;
+      }
+
+      .message.user {
+        margin-left: auto;
+        border-color: #99f6e4;
+        background: #f0fdfa;
+      }
+
+      .message.assistant {
+        margin-right: auto;
+      }
+
+      .role {
+        display: block;
+        margin-bottom: 5px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+
+      form {
+        display: flex;
+        gap: 10px;
+        padding: 16px 22px 20px;
+        border-top: 1px solid var(--line);
+        background: #ffffff;
+      }
+
+      select {
+        width: 126px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 0 10px;
+        background: #ffffff;
+        color: var(--ink);
+        font: inherit;
+        font-weight: 700;
+      }
+
+      textarea {
+        flex: 1;
+        min-height: 48px;
+        max-height: 160px;
+        resize: vertical;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 12px 13px;
+        font: inherit;
+      }
+
+      button {
+        width: 108px;
+        border: 0;
+        border-radius: 8px;
+        background: var(--brand);
+        color: #ffffff;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      button:disabled {
+        cursor: not-allowed;
+        opacity: 0.55;
+      }
+
+      aside {
+        overflow-y: auto;
+        padding: 20px;
+        background: var(--panel);
+      }
+
+      aside h2 {
+        margin: 0 0 10px;
+        font-size: 16px;
+      }
+
+      .card {
+        margin-bottom: 14px;
+        padding: 13px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #ffffff;
+      }
+
+      .card h3 {
+        margin: 0 0 8px;
+        font-size: 14px;
+      }
+
+      .card p,
+      .card li {
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.35;
+      }
+
+      .trace {
+        margin-top: 8px;
+        padding: 10px;
+        border-left: 4px solid var(--accent);
+        border-radius: 6px;
+        background: #fff7ed;
+        font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+        font-size: 12px;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+
+      @media (max-width: 900px) {
+        main {
+          grid-template-columns: 1fr;
+        }
+
+        aside {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="chat">
+        <header>
+          <h1>ReAct 與 Reflexion 教學實驗室</h1>
+          <div class="subtitle">以交通事務局即時停車場車位 API，比較「先調用工具查資料」與「先寫、再檢查、再修改」。</div>
+        </header>
+
+        <div id="messages"></div>
+
+        <form id="chat-form">
+          <select id="mode" aria-label="示範模式">
+            <option value="react">ReAct</option>
+            <option value="reflexion">Reflexion</option>
+          </select>
+          <textarea id="input" placeholder="貼上右方的開放數據示例……"></textarea>
+          <button id="send" type="submit">傳送</button>
+        </form>
+      </section>
+
+      <aside>
+        <div class="card">
+          <h2>試用以下問題</h2>
+          <ul>
+            <li><strong>ReAct：</strong>你是資料查核助理。任務：查詢「下環街市」目前的汽車位、電單車位、電動汽車位及無障礙車位。先用一句話列出查核計畫，再調用 <code>get_macao_parking_spaces</code>；取得 Observation 後才回答。輸出「查核計畫／工具觀察摘要／最終答案」，列出更新時間。不得補造；null 不可當作 0。</li>
+            <li><strong>Reflexion：</strong>請根據以下資料寫一段 80 字內的即時車位資訊使用提示：車位數目會變動；使用前要查看更新時間；空值代表沒有資料，不等於零。請先寫初稿，再檢查三項提醒及是否補造資料，最後修訂。</li>
+            <li>在兩種模式執行同一問題，然後比較過程紀錄。</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h2>可用工具</h2>
+          <h3>get_macao_parking_spaces</h3>
+          <p>調用交通事務局「停車場車位資訊」API，按中文名稱查詢最新剩餘車位。</p>
+          <h3>list_macao_parking_names</h3>
+          <p>不知道正確名稱時，先列出可供查詢的停車場。</p>
+          <h3>compare_macao_parking_spaces</h3>
+          <p>比較 2 至 5 個停車場指定類型的剩餘車位。</p>
+        </div>
+
+        <div class="card">
+          <h2>過程紀錄</h2>
+          <p><strong>ReAct：</strong>停車場名稱 → 即時 API → 觀察車位及時間 → 回答。<br><strong>Reflexion：</strong>初稿 → 檢查缺漏 → 修訂稿。</p>
+          <div id="trace"></div>
+        </div>
+      </aside>
+    </main>
+
+    <script>
+      const messagesEl = document.querySelector("#messages");
+      const traceEl = document.querySelector("#trace");
+      const form = document.querySelector("#chat-form");
+      const input = document.querySelector("#input");
+      const send = document.querySelector("#send");
+      const mode = document.querySelector("#mode");
+
+      const messages = [
+        {
+          role: "assistant",
+          content:
+            "請選擇 ReAct 或 Reflexion，然後貼上右方示例。ReAct 會查詢交通事務局即時車位；Reflexion 會檢查及修訂使用提示。"
+        }
+      ];
+
+      function renderMessages() {
+        messagesEl.innerHTML = "";
+        for (const message of messages) {
+          const div = document.createElement("div");
+          div.className = `message ${message.role}`;
+          const roleLabel = message.role === "user" ? "使用者" : "AI 助手";
+          div.innerHTML = `<span class="role">${roleLabel}</span>${escapeHtml(message.content)}`;
+          messagesEl.appendChild(div);
+        }
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+      }
+
+      function renderTrace(toolTrace, reflectionTrace) {
+        if (reflectionTrace) {
+          traceEl.innerHTML = "";
+          const draft = document.createElement("div");
+          draft.className = "trace";
+          draft.textContent = `初稿\n${reflectionTrace.draft}`;
+          const critique = document.createElement("div");
+          critique.className = "trace";
+          critique.textContent = `批判檢查表\n${reflectionTrace.critique}`;
+          traceEl.append(draft, critique);
+          return;
+        }
+
+        if (!toolTrace || toolTrace.length === 0) {
+          traceEl.innerHTML = "<p>最新一輪 ReAct 沒有使用外部工具。</p>";
+          return;
+        }
+
+        traceEl.innerHTML = "";
+        for (const item of toolTrace) {
+          const div = document.createElement("div");
+          div.className = "trace";
+          div.textContent = JSON.stringify(item, null, 2);
+          traceEl.appendChild(div);
+        }
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const text = input.value.trim();
+        if (!text) return;
+
+        messages.push({ role: "user", content: text });
+        input.value = "";
+        send.disabled = true;
+        renderMessages();
+        renderTrace([], null);
+
+        try {
+          const response = await fetch("/api/chat", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ messages, mode: mode.value })
+          });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || "請求失敗");
+
+          messages.push({ role: "assistant", content: data.reply });
+          renderMessages();
+          renderTrace(data.toolTrace, data.reflectionTrace);
+        } catch (error) {
+          messages.push({ role: "assistant", content: `錯誤：${error.message}` });
+          renderMessages();
+        } finally {
+          send.disabled = false;
+          input.focus();
+        }
+      });
+
+      renderMessages();
+      renderTrace([], null);
+    </script>
+  </body>
+</html>

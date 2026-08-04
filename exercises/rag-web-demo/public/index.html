@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>透明 RAG 教學實驗室</title>
+  <style>
+    :root{--ink:#10233f;--muted:#607089;--line:#dbe4ef;--brand:#0f766e;--blue:#2563eb;--soft:#f6f9fc;--warn:#c2410c}
+    *{box-sizing:border-box} body{margin:0;font:15px/1.5 Inter,system-ui,sans-serif;color:var(--ink);background:var(--soft)}
+    header{padding:22px 28px;color:white;background:linear-gradient(120deg,#0f766e,#2563eb)} h1{margin:0;font-size:25px} header p{margin:3px 0 0;opacity:.86}
+    main{display:grid;grid-template-columns:360px minmax(0,1fr);gap:18px;padding:18px;max-width:1450px;margin:auto}
+    section{background:white;border:1px solid var(--line);border-radius:12px;padding:18px;box-shadow:0 5px 18px #0f172a0b}
+    h2{font-size:17px;margin:0 0 12px} h3{font-size:14px;margin:15px 0 7px}.hint,.meta{color:var(--muted);font-size:13px}
+    input,textarea,button{font:inherit} input,textarea{width:100%;padding:10px 11px;border:1px solid #cbd5e1;border-radius:8px} textarea{min-height:92px;resize:vertical}
+    button,.button{display:inline-block;border:0;border-radius:8px;padding:10px 13px;background:var(--brand);color:white;font-weight:700;cursor:pointer;text-decoration:none}
+    button.secondary,.button.secondary{background:var(--blue)} button:disabled{opacity:.55;cursor:wait}.row{display:flex;gap:8px}.row input{flex:1}.stack>*+*{margin-top:9px}
+    .doc,.source{border:1px solid var(--line);border-radius:9px;padding:11px;margin-top:9px;background:#fff}.doc strong{display:block}.pill{display:inline-block;padding:2px 7px;border-radius:99px;background:#e0f2fe;color:#075985;font-size:11px;font-weight:700}
+    .answer{min-height:90px;white-space:pre-wrap;border-left:5px solid var(--brand);padding:13px;background:#f0fdfa;border-radius:8px}.source{background:#f8fafc}.source summary{cursor:pointer;font-weight:700}.score{color:var(--warn);font-weight:800}.source pre{white-space:pre-wrap;font:13px/1.45 ui-monospace,monospace;color:#334155}
+    .status{min-height:22px;color:var(--warn);font-weight:650;font-size:13px}.flow{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}.flow span{padding:5px 9px;border-radius:99px;background:#e8eef7;font-size:12px;font-weight:750}.flow b{align-self:center;color:#94a3b8}
+    @media(max-width:850px){main{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <header><h1>透明 RAG 教學實驗室</h1><p>匯入 → 分段 → 檢索 → 增強 → 生成附引用答案</p></header>
+  <main>
+    <div class="stack">
+      <section>
+        <h2>1. 建立知識庫</h2>
+        <p class="hint">只使用公開及非敏感資料。網頁由本機伺服器下載。</p>
+        <form id="url-form" class="stack">
+          <input id="url" type="url" placeholder="https://www.gov.mo/en/services/..." required>
+          <button>匯入網頁</button>
+        </form>
+        <h3>或上載本機文件</h3>
+        <input id="file" type="file" accept=".txt,.md,.json,.pdf,text/plain,application/json,application/pdf">
+        <div class="row" style="margin-top:12px"><a class="button secondary" href="/api/export">下載知識庫</a><button id="refresh" class="secondary" type="button">重新整理</button></div>
+        <div id="import-status" class="status"></div>
+      </section>
+      <section>
+        <h2>已建立索引的文件</h2>
+        <div id="documents"></div>
+      </section>
+    </div>
+    <section>
+      <div class="flow"><span>問題</span><b>→</b><span>高分段落</span><b>→</b><span>提示詞＋證據</span><b>→</b><span>附引用答案</span></div>
+      <h2>2. 提出有證據支持的問題</h2>
+      <form id="ask-form" class="stack">
+        <textarea id="question" required>根據澳門大學《性騷擾及性霸凌個案處理指引》，投訴一般須在事件發生後多久提出？如果投訴先交給部門主管，主管須在多少個工作日內轉交性別平等委員會？請分點回答，並為每項答案標示資料來源；如檢索資料不足，請明確說明。</textarea>
+        <button id="ask">檢索並回答</button>
+      </form>
+      <div id="ask-status" class="status"></div>
+      <h3>生成答案</h3>
+      <div id="answer" class="answer">答案將顯示於此。</div>
+      <h3>檢索證據（採信答案前請先核對）</h3>
+      <div id="sources"></div>
+    </section>
+  </main>
+  <script>
+    const $=s=>document.querySelector(s); const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    async function request(url,options){const r=await fetch(url,options);const d=await r.json();if(!r.ok)throw new Error(d.error||'請求失敗');return d}
+    async function loadDocs(){const d=await request('/api/documents');$('#documents').innerHTML=d.documents.map(x=>`<div class="doc"><strong>${esc(x.title)}</strong><span class="pill">${x.chunks} 個段落</span> <span class="meta">${x.characters} 個字元 · 編碼 ${esc(x.charset||'utf-8')}</span><div class="meta">${esc(x.source)}</div></div>`).join('')||'<p class="hint">尚未建立任何文件索引。</p>'}
+    $('#refresh').onclick=loadDocs;
+    $('#url-form').onsubmit=async e=>{e.preventDefault();const b=e.submitter;b.disabled=true;$('#import-status').textContent='正在下載並建立索引……';try{const d=await request('/api/import-url',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({url:$('#url').value})});$('#import-status').textContent=`已匯入「${d.document.title}」，共 ${d.document.chunks} 個段落。`;await loadDocs()}catch(x){$('#import-status').textContent=x.message}finally{b.disabled=false}};
+    $('#file').onchange=async e=>{const f=e.target.files[0];if(!f)return;$('#import-status').textContent='正在讀取並建立索引……';try{let payload={title:f.name,source:`上載:${f.name}`};if(f.type==='application/pdf'||f.name.toLowerCase().endsWith('.pdf')){const bytes=new Uint8Array(await f.arrayBuffer());let binary='';for(let i=0;i<bytes.length;i+=8192)binary+=String.fromCharCode(...bytes.subarray(i,i+8192));payload.mime_type='application/pdf';payload.base64=btoa(binary)}else{payload.text=await f.text()}const d=await request('/api/import-text',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)});$('#import-status').textContent=`已匯入「${d.document.title}」，共 ${d.document.chunks} 個段落。`;await loadDocs()}catch(x){$('#import-status').textContent=x.message}e.target.value=''};
+    $('#ask-form').onsubmit=async e=>{e.preventDefault();const b=$('#ask');b.disabled=true;$('#ask-status').textContent='正在檢索段落並生成答案……';$('#sources').innerHTML='';try{const d=await request('/api/ask',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({question:$('#question').value})});$('#answer').textContent=d.answer;$('#sources').innerHTML=d.retrieved.map((x,i)=>`<details class="source" ${i<2?'open':''}><summary>[S${i+1}] ${esc(x.title)} — 分數 <span class="score">${x.score}</span></summary><div class="meta">${esc(x.source)} · 第 ${x.chunk} 段</div><pre>${esc(x.text)}</pre></details>`).join('')||'<p>找不到相關證據。</p>';$('#ask-status').textContent=`已檢索 ${d.retrieved.length} 個段落。`}catch(x){$('#ask-status').textContent=x.message}finally{b.disabled=false}};
+    loadDocs();
+  </script>
+</body>
+</html>
