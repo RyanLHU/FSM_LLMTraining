@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="澳門法律智能檢索教學示範">
+  <title>法徑 · 澳門法律 RAG</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="法徑首頁"><span class="seal">法</span><span>法徑 <small>LEX PATH</small></span></a>
+    <div class="official"><span class="status-dot"></span>資料來源：法務局「搜法易」</div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="eyebrow">MACAU LAW · RETRIEVAL AUGMENTED GENERATION</div>
+      <h1>從官方法規中，<br><em>找到回答的依據。</em></h1>
+      <p>輸入法律問題，系統會即時檢索法務局文件、重排相關段落，並以可核對的來源回答。</p>
+    </section>
+
+    <section class="workspace">
+      <form id="ask-form" class="ask-card">
+        <label for="question">你的法律問題</label>
+        <textarea id="question" maxlength="300" rows="3" placeholder="例如：澳門刑法中的罪刑法定原則是甚麼？" required></textarea>
+        <div class="form-footer">
+          <div class="scope-wrap">
+            <label for="scope">檢索範圍</label>
+            <select id="scope">
+              <option value="laws">法律及法規</option>
+              <option value="all">全部公報文件</option>
+              <option value="legismac">LegisMac 法律彙編</option>
+            </select>
+          </div>
+          <button id="submit" type="submit"><span>開始檢索</span><span aria-hidden="true">→</span></button>
+        </div>
+      </form>
+
+      <div class="examples" aria-label="示例問題">
+        <span>試一試</span>
+        <button data-question="澳門刑法中的罪刑法定原則是甚麼？">罪刑法定原則</button>
+        <button data-question="僱主需要在甚麼時候支付報酬？">勞動報酬</button>
+        <button data-question="個人資料處理須遵守哪些原則？">個人資料</button>
+      </div>
+
+      <section id="result" class="result hidden" aria-live="polite">
+        <div class="result-head">
+          <div><span class="kicker">GROUNDED RESPONSE</span><h2>檢索回答</h2></div>
+          <span id="provider" class="provider"></span>
+        </div>
+        <div id="loading" class="loading hidden"><span></span><p>正在查閱官方法律資料…</p></div>
+        <div id="error" class="error hidden"></div>
+        <article id="answer" class="answer"></article>
+        <div id="trace" class="trace hidden"></div>
+        <div id="sources" class="sources"></div>
+      </section>
+    </section>
+
+    <section class="how">
+      <div><span>01</span><h3>即時檢索</h3><p>每次提問都連接「搜法易」，不使用預先偽造的示例答案。</p></div>
+      <div><span>02</span><h3>段落重排</h3><p>將長篇法規切分，再按問題與條文內容的相關性排序。</p></div>
+      <div><span>03</span><h3>來源可核</h3><p>回答附上官方文件連結及狀態；最終應以公報 PDF 為準。</p></div>
+    </section>
+  </main>
+
+  <footer><p>教學示範 · 不構成法律意見</p><a href="https://search.bo.dsaj.gov.mo/?lang=zh-mo" target="_blank" rel="noopener">開啟搜法易 ↗</a></footer>
+  <script src="/app.js" defer></script>
+</body>
+</html>
+
